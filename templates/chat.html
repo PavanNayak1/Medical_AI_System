@@ -35,12 +35,16 @@
 							
 							
 						</div>
-						<div class="card-footer">
-							<form id="messageArea" class="input-group">
-                                <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
+						<div class="card-footer d-flex align-items-center">
+							<form id="messageArea" class="input-group flex-grow-1">
+								<input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
 								<div class="input-group-append">
 									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
 								</div>
+							</form>
+							<form action="/upload" method="post" enctype="multipart/form-data" class="ml-2">
+								<input type="file" name="image" accept="image/*" required style="display: none;" id="imageInput">
+								<button type="button" onclick="document.getElementById('imageInput').click()" class="btn btn-secondary"><i class="fas fa-upload"></i></button>
 							</form>
 						</div>
 					</div>
