@@ -42,7 +42,7 @@
 									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
 								</div>
 							</form>
-							<form action="/upload" method="post" enctype="multipart/form-data" class="ml-2">
+							<form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="ml-2">
 								<input type="file" name="image" accept="image/*" required style="display: none;" id="imageInput">
 								<button type="button" onclick="document.getElementById('imageInput').click()" class="btn btn-secondary"><i class="fas fa-upload"></i></button>
 							</form>
@@ -51,35 +51,136 @@
 				</div>
 			</div>
 		</div>
-		
+		<!-- ================= JAVASCRIPT ================= -->
+		<!-- ===== JQUERY ===== -->
 		<script>
 			$(document).ready(function() {
+
+				/* ================= TEXT CHAT ================= */
 				$("#messageArea").on("submit", function(event) {
+					event.preventDefault();
+
 					const date = new Date();
-					const hour = date.getHours();
-					const minute = date.getMinutes();
-					const str_time = hour+":"+minute;
+					const str_time = date.getHours() + ":" + date.getMinutes();
 					var rawText = $("#text").val();
 
-					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-					
+					if (!rawText.trim()) return;
+
+					var userHtml =
+						'<div class="d-flex justify-content-end mb-4">' +
+							'<div class="msg_cotainer_send">' +
+								rawText +
+								'<span class="msg_time_send">' + str_time + '</span>' +
+							'</div>' +
+							'<div class="img_cont_msg">' +
+								'<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">' +
+							'</div>' +
+						'</div>';
+
 					$("#text").val("");
 					$("#messageFormeight").append(userHtml);
 
 					$.ajax({
-						data: {
-							msg: rawText,	
-						},
+						data: { msg: rawText },
 						type: "POST",
 						url: "/get",
 					}).done(function(data) {
-						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
+
+						var botHtml =
+							'<div class="d-flex justify-content-start mb-4">' +
+								'<div class="img_cont_msg">' +
+									'<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
+								'</div>' +
+								'<div class="msg_cotainer">' +
+									data +
+									'<span class="msg_time">' + str_time + '</span>' +
+								'</div>' +
+							'</div>';
+
 						$("#messageFormeight").append($.parseHTML(botHtml));
 					});
-					event.preventDefault();
 				});
+
+
+				/* ================= IMAGE UPLOAD ================= */
+
+				$("#imageInput").on("change", function() {
+					const file = this.files[0];
+					if (!file) return;
+
+					const date = new Date();
+					const str_time = date.getHours() + ":" + date.getMinutes();
+
+					/* 🔹 Show uploaded image (preview bubble) */
+					const reader = new FileReader();
+					reader.onload = function(e) {
+						var imageHtml =
+							'<div class="d-flex justify-content-end mb-4">' +
+								'<div class="msg_cotainer_send">' +
+									'<img src="' + e.target.result + '" style="max-width:200px; border-radius:10px; display:block;">' +
+									'<span class="msg_time_send">' + str_time + '</span>' +
+								'</div>' +
+								'<div class="img_cont_msg">' +
+									'<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">' +
+								'</div>' +
+							'</div>';
+
+						$("#messageFormeight").append(imageHtml);
+					};
+					reader.readAsDataURL(file);
+
+					/* 🔹 Send image to backend */
+					var formData = new FormData();
+					formData.append("image", file);
+
+					$.ajax({
+						url: "/upload",
+						type: "POST",
+						data: formData,
+						processData: false,
+						contentType: false,
+					})
+					.done(function(data) {
+
+						/* 🔹 data is JSON — extract fields */
+						var botHtml =
+							'<div class="d-flex justify-content-start mb-4">' +
+								'<div class="img_cont_msg">' +
+									'<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
+								'</div>' +
+								'<div class="msg_cotainer">' +
+									'<b>Prediction:</b> ' + data.prediction.disease + '<br>' +
+									'<b>Confidence:</b> ' + (data.prediction.confidence * 100).toFixed(2) + '%<br><br>' +
+									data.chatbot_response +
+									'<span class="msg_time">' + str_time + '</span>' +
+								'</div>' +
+							'</div>';
+
+						$("#messageFormeight").append($.parseHTML(botHtml));
+					})
+					.fail(function() {
+
+						var errorHtml =
+							'<div class="d-flex justify-content-start mb-4">' +
+								'<div class="img_cont_msg">' +
+									'<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
+								'</div>' +
+								'<div class="msg_cotainer">' +
+									'Image upload failed. Please try again.' +
+									'<span class="msg_time">' + str_time + '</span>' +
+								'</div>' +
+							'</div>';
+
+						$("#messageFormeight").append($.parseHTML(errorHtml));
+					});
+
+					// reset input so same image can be uploaded again
+					$("#imageInput").val("");
+				});
+
 			});
 		</script>
+
         
     </body>
 </html>

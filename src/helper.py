@@ -1,8 +1,12 @@
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from typing import List
 from langchain.schema import Document
+import tensorflow as tf
+import numpy as np
+import os
 import re
 
 #extracting text from pdf files
@@ -49,10 +53,6 @@ def filter_minimal(docs: List[Document])-> List[Document]:
     filtered_docs = clean_text(filtered)
     return filtered_docs
 
-
-
-
-
 #splitting documents into smaller chunks
 def text_split(cleaned_docs):
     text_splitter = RecursiveCharacterTextSplitter(
@@ -73,3 +73,4 @@ def text_embedding():
 
         )
     return embeddings
+

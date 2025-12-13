@@ -8,4 +8,7 @@ langchain-pinecone==0.2.9
 langchain-google-genai==2.0.0  # Added for Gemini API
 langchain-community==0.3.26
 ipykernel==6.29.5     #for jupyter notebook support
+tensorflow==2.16.1
+tf-keras
+numpy==1.26.4
 -e . #for setup file

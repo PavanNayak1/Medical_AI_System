@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from src.helper import text_embedding
+from src.model import predict_eye_disease
 from langchain_pinecone import PineconeVectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import create_retrieval_chain
@@ -7,28 +8,15 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from src.prompt import *
-import os
-# for our model
 from PIL import Image
 import io
-import pickle  # Or your model's library (e.g., tensorflow, torch)
+import os
+
 
 
 
 app = Flask(__name__)
 
-model = None
-try:
-    with open('path/to/your/model.pkl', 'rb') as f:
-        model = pickle.load(f)
-except FileNotFoundError:
-    print("Model file not found. Upload will return a message.")
-
-def predict_eye_disease(image):
-    if model is None:
-        return None  # Indicate no model
-    # Preprocess and predict (replace with your logic)
-    return {"disease": "CNV", "confidence": 0.95}
 
 load_dotenv()
 
@@ -73,19 +61,36 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    if 'image' not in request.files:
+    if "image" not in request.files:
         return "No image uploaded", 400
-    file = request.files['image']
-    if file.filename == '':
+
+    file = request.files["image"]
+
+    if file.filename == "":
         return "No selected file", 400
-    image = Image.open(io.BytesIO(file.read()))
+
+    # Read image safely
+    image = Image.open(io.BytesIO(file.read())).convert("RGB")
+
+    # 🔥 Model prediction happens HERE
     prediction = predict_eye_disease(image)
+
     if prediction is None:
-        return "We don't have the model to classify it."
-    # Create query for chatbot
-    query = f"What is {prediction['disease']}? Confidence: {prediction['confidence']}"
+        return "Model could not classify the image", 500
+
+    # 🔥 Send result to chatbot
+    query = (
+        f"The OCT scan is classified as {prediction['disease']} "
+        f"with {prediction['confidence']*100:.2f}% confidence. "
+        f"Explain this disease, precautions, and treatment."
+    )
+
     response = rag_chain.invoke({"input": query})
-    return str(response["answer"])
+
+    return jsonify({
+        "prediction": prediction,
+        "chatbot_response": response["answer"]
+    })
 
     
 @app.route("/get", methods=["GET", "POST"])
