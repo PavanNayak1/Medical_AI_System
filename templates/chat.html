@@ -1,3 +1,4 @@
+
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -9,6 +10,8 @@
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
 	</head>
 	
@@ -51,136 +54,136 @@
 				</div>
 			</div>
 		</div>
-		<!-- ================= JAVASCRIPT ================= -->
-		<!-- ===== JQUERY ===== -->
-		<script>
-			$(document).ready(function() {
+		<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
-				/* ================= TEXT CHAT ================= */
-				$("#messageArea").on("submit", function(event) {
-					event.preventDefault();
+<script>
+    function renderMarkdown(text) {
+        if (!text) return '';
+        const rawHtml = marked.parse(text.trim());
+        return DOMPurify.sanitize(rawHtml);
+    }
 
-					const date = new Date();
-					const str_time = date.getHours() + ":" + date.getMinutes();
-					var rawText = $("#text").val();
+    $(document).ready(function() {
 
-					if (!rawText.trim()) return;
+        /* ================= TEXT CHAT ================= */
+        $("#messageArea").on("submit", function(event) {
+            event.preventDefault();
 
-					var userHtml =
-						'<div class="d-flex justify-content-end mb-4">' +
-							'<div class="msg_cotainer_send">' +
-								rawText +
-								'<span class="msg_time_send">' + str_time + '</span>' +
-							'</div>' +
-							'<div class="img_cont_msg">' +
-								'<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">' +
-							'</div>' +
-						'</div>';
+            const date = new Date();
+            const str_time = date.getHours() + ":" + date.getMinutes();
+            var rawText = $("#text").val().trim();
 
-					$("#text").val("");
-					$("#messageFormeight").append(userHtml);
+            if (!rawText) return;
 
-					$.ajax({
-						data: { msg: rawText },
-						type: "POST",
-						url: "/get",
-					}).done(function(data) {
+            var userHtml =
+                '<div class="d-flex justify-content-end mb-4">' +
+                    '<div class="msg_cotainer_send">' +
+                        rawText +
+                        '<span class="msg_time_send">' + str_time + '</span>' +
+                    '</div>' +
+                    '<div class="img_cont_msg">' +
+                        '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">' +
+                    '</div>' +
+                '</div>';
 
-						var botHtml =
-							'<div class="d-flex justify-content-start mb-4">' +
-								'<div class="img_cont_msg">' +
-									'<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
-								'</div>' +
-								'<div class="msg_cotainer">' +
-									data +
-									'<span class="msg_time">' + str_time + '</span>' +
-								'</div>' +
-							'</div>';
+            $("#text").val("");
+            $("#messageFormeight").append(userHtml);
+			$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
 
-						$("#messageFormeight").append($.parseHTML(botHtml));
-					});
-				});
+            $.ajax({
+                data: { msg: rawText },
+                type: "POST",
+                url: "/get",
+            }).done(function(data) {
+                var botHtml =
+                    '<div class="d-flex justify-content-start mb-4">' +
+                        '<div class="img_cont_msg">' +
+                            '<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
+                        '</div>' +
+                        '<div class="msg_cotainer">' +
+                            renderMarkdown(data) +  // Now correctly renders Markdown for text chat
+                            '<span class="msg_time">' + str_time + '</span>' +
+                        '</div>' +
+                    '</div>';
 
+                $("#messageFormeight").append($.parseHTML(botHtml));  // Fixed: $ instead of $$
+				$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+            });
+        });
 
-				/* ================= IMAGE UPLOAD ================= */
+        /* ================= IMAGE UPLOAD ================= */
+        $("#imageInput").on("change", function() {
+            const file = this.files[0];
+            if (!file) return;
 
-				$("#imageInput").on("change", function() {
-					const file = this.files[0];
-					if (!file) return;
+            const date = new Date();
+            const str_time = date.getHours() + ":" + date.getMinutes();
 
-					const date = new Date();
-					const str_time = date.getHours() + ":" + date.getMinutes();
+            /* Show preview */
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                var imageHtml =
+                    '<div class="d-flex justify-content-end mb-4">' +
+                        '<div class="msg_cotainer_send">' +
+                            '<img src="' + e.target.result + '" style="max-width:200px; border-radius:10px; display:block;">' +
+                            '<span class="msg_time_send">' + str_time + '</span>' +
+                        '</div>' +
+                        '<div class="img_cont_msg">' +
+                            '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">' +
+                        '</div>' +
+                    '</div>';
 
-					/* 🔹 Show uploaded image (preview bubble) */
-					const reader = new FileReader();
-					reader.onload = function(e) {
-						var imageHtml =
-							'<div class="d-flex justify-content-end mb-4">' +
-								'<div class="msg_cotainer_send">' +
-									'<img src="' + e.target.result + '" style="max-width:200px; border-radius:10px; display:block;">' +
-									'<span class="msg_time_send">' + str_time + '</span>' +
-								'</div>' +
-								'<div class="img_cont_msg">' +
-									'<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">' +
-								'</div>' +
-							'</div>';
+                $("#messageFormeight").append(imageHtml);
+				$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+            };
+            reader.readAsDataURL(file);
 
-						$("#messageFormeight").append(imageHtml);
-					};
-					reader.readAsDataURL(file);
+            /* Send to backend */
+            var formData = new FormData();
+            formData.append("image", file);
 
-					/* 🔹 Send image to backend */
-					var formData = new FormData();
-					formData.append("image", file);
+            $.ajax({
+                url: "/upload",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+            })
+            .done(function(data) {
+                var botHtml =
+                    '<div class="d-flex justify-content-start mb-4">' +
+                        '<div class="img_cont_msg">' +
+                            '<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
+                        '</div>' +
+                        '<div class="msg_cotainer">' +
+                            '<b>Prediction:</b> ' + data.prediction.disease + '<br>' +
+                            '<b>Confidence:</b> ' + (data.prediction.confidence * 100).toFixed(2) + '%<br><br>' +
+                            renderMarkdown(data.chatbot_response) +  // ← THIS WAS MISSING! Now renders properly
+                            '<span class="msg_time">' + str_time + '</span>' +
+                        '</div>' +
+                    '</div>';
 
-					$.ajax({
-						url: "/upload",
-						type: "POST",
-						data: formData,
-						processData: false,
-						contentType: false,
-					})
-					.done(function(data) {
+                $("#messageFormeight").append($.parseHTML(botHtml));
+				$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+            })
+            .fail(function() {
+                var errorHtml =
+                    '<div class="d-flex justify-content-start mb-4">' +
+                        '<div class="img_cont_msg">' +
+                            '<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
+                        '</div>' +
+                        '<div class="msg_cotainer">' +
+                            'Image upload failed. Please try again.' +
+                            '<span class="msg_time">' + str_time + '</span>' +
+                        '</div>' +
+                    '</div>';
 
-						/* 🔹 data is JSON — extract fields */
-						var botHtml =
-							'<div class="d-flex justify-content-start mb-4">' +
-								'<div class="img_cont_msg">' +
-									'<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
-								'</div>' +
-								'<div class="msg_cotainer">' +
-									'<b>Prediction:</b> ' + data.prediction.disease + '<br>' +
-									'<b>Confidence:</b> ' + (data.prediction.confidence * 100).toFixed(2) + '%<br><br>' +
-									data.chatbot_response +
-									'<span class="msg_time">' + str_time + '</span>' +
-								'</div>' +
-							'</div>';
+                $("#messageFormeight").append($.parseHTML(errorHtml));
+				$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+            });
 
-						$("#messageFormeight").append($.parseHTML(botHtml));
-					})
-					.fail(function() {
-
-						var errorHtml =
-							'<div class="d-flex justify-content-start mb-4">' +
-								'<div class="img_cont_msg">' +
-									'<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">' +
-								'</div>' +
-								'<div class="msg_cotainer">' +
-									'Image upload failed. Please try again.' +
-									'<span class="msg_time">' + str_time + '</span>' +
-								'</div>' +
-							'</div>';
-
-						$("#messageFormeight").append($.parseHTML(errorHtml));
-					});
-
-					// reset input so same image can be uploaded again
-					$("#imageInput").val("");
-				});
-
-			});
-		</script>
-
-        
-    </body>
-</html>
+            $("#imageInput").val("");  // Reset
+        });
+    });
+</script>

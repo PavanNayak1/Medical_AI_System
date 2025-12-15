@@ -80,9 +80,9 @@ def upload():
 
     # 🔥 Send result to chatbot
     query = (
-        f"The OCT scan is classified as {prediction['disease']} "
-        f"with {prediction['confidence']*100:.2f}% confidence. "
-        f"Explain this disease, precautions, and treatment."
+    f"The OCT scan suggests {prediction['disease']} "
+    f"with {prediction['confidence']*100:.1f}% confidence. "
+    "Explain briefly in a patient-friendly way."
     )
 
     response = rag_chain.invoke({"input": query})
@@ -105,4 +105,4 @@ def chat():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port= 8080, debug= True)
+    app.run(host="0.0.0.0", port= 8085, debug= True)
