@@ -99,7 +99,10 @@ Edge TTS – Voice generation
 
 HTML / CSS / JavaScript – Frontend
 <hr>
+
 **📁 Project Structure**
+
+
 Medical_AI_System/
 │
 ├── app.py
@@ -122,8 +125,11 @@ Medical_AI_System/
 ├── .env
 ├── requirements.txt
 └── README.md
+
 <hr>
+
 ****⚙️ Setup Instructions****
+
 1️⃣ Clone the repository
 git clone <your-github-repo-link>
 cd Medical_AI_System
@@ -150,9 +156,11 @@ python app.py
 The app will start at:
 
 http://127.0.0.1:8080
+
 <hr>
-**⚠️ Important Disclaimer
-**
+
+**⚠️ Important Disclaimer**
+
 This project is for educational and assistive purposes only.
 It is not a diagnostic tool and should not be used for medical decisions.
 
