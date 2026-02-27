@@ -103,7 +103,8 @@ HTML / CSS / JavaScript – Frontend
 **📁 Project Structure**
 
 
-```Medical_AI_System/
+```
+Medical_AI_System/
 │
 ├── app.py
 ├── src/
