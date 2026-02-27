@@ -3,24 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vision AI | MedChatbot</title>
+    <title>QuickMed AI | MedChatbot</title>
     
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
 </head>
+<div id="organModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:#1e1e2f; padding:30px; border-radius:15px; text-align:center; border: 1px solid rgba(255,255,255,0.1);">
+            <h3 style="color:white; margin-bottom:20px;">Select Scan Type</h3>
+            <button onclick="selectOrgan('eye', 'Eye (Retina)')" class="btn btn-info m-2">👁️ Eye (OCT)</button>
+            <button onclick="selectOrgan('brain', 'Brain (MRI)')" class="btn btn-info m-2">🧠 Brain (MRI)</button>
+            <button onclick="selectOrgan('lungs', 'Lungs (X-ray)')" class="btn btn-info m-2">🫁 Lungs (X-ray)</button>
+            <br><br>
+            <button onclick="document.getElementById('organModal').style.display='none'" class="btn btn-secondary btn-sm">Cancel</button>
+        </div>
+</div>
 <body>
 
     <div class="dashboard-wrapper">
         <nav class="vision-sidebar">
             <div class="brand-section">
-                <div class="logo-glow"><i class="fas fa-eye"></i></div>
-                <span>Vision AI</span>
+                <div class="logo-glow">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <span>QuickMed AI</span>
             </div>
             <div class="nav-menu">
                 <div class="menu-item active"><i class="fas fa-robot"></i> MedChatbot</div>
-                <div class="menu-item" onclick="document.getElementById('imageInput').click()"><i class="fas fa-camera"></i> Scan Retina</div>
+                <div class="menu-item" onclick="document.getElementById('imageInput').click()"><i class="fas fa-camera"></i> Medical Scans</div>
+            </div>
+            <div class="nav-menu">
+                <!-- <div class="menu-item active"><i class="fas fa-robot"></i> MedChatbot</div> -->
+                
+                <div class="menu-item" id="scanModeBtn" onclick="openOrganModal(false)">
+                    <i class="fas fa-microscope"></i> Target: <span id="currentScanLabel" style="color: #00d2ff; font-weight: bold;">Not Selected</span>
+                </div>
             </div>
             <div class="system-health mt-auto">
                 <div class="pulse-dot"></div><span>AI Engine Active</span>
@@ -30,7 +49,7 @@
         <main class="content-area">
             <header class="glass-header">
                 <div class="header-titles">
-                    <h1>MedChatbot <span class="badge badge-cyan">v4.0</span></h1>
+                    <h1>MedChatbot <span class="badge badge-cyan">v1.0</span></h1>
                 </div>
                 <div class="user-profile">
                     <img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="avatar">
@@ -41,7 +60,7 @@
                 <div class="msg-row bot">
                     <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="chat-avatar">
                     <div class="bubble">
-                        Greetings. I am <strong>MedChatbot</strong>. Please upload a retinal scan for analysis.
+                        Greetings. I am <strong>MedChatbot</strong>. Please upload a medical scans for analysis.
                         <span class="time">System Online</span>
                     </div>
                 </div>
@@ -49,6 +68,7 @@
 
             <footer class="action-bar">
                 <form id="messageArea" class="input-container">
+
                     <button type="button" class="btn-upload" onclick="document.getElementById('imageInput').click()">
                         <i class="fas fa-paperclip"></i>
                     </button>
@@ -68,6 +88,10 @@
 
                     <button type="button" id="stopAudioBtn" class="btn-mic" style="display:none; color: #ff4d4d;">
                         <i class="fas fa-stop-circle"></i>
+                    </button>
+                    <!-- Button for selecting the Diseases -->
+                    <button type="button" class="btn-upload" onclick="handlePaperclipClick()">
+                        <i class="fas fa-paperclip"></i>
                     </button>
 
                 </form>
@@ -106,7 +130,45 @@
         }
 
         let currentAudio = null;
+// --- DYNAMIC ORGAN TRACKING ---
+        let currentOrgan = null; 
+        let pendingUpload = false; // Remembers if we clicked the paperclip
 
+        function handlePaperclipClick() {
+            if (currentOrgan === null) {
+                // First time: show the selection menu, and remember they wanted to upload
+                pendingUpload = true;
+                document.getElementById('organModal').style.display = 'flex';
+            } else {
+                // They already picked an organ previously, just open the file picker!
+                document.getElementById('imageInput').click();
+            }
+        }
+
+        function openOrganModal() {
+            // User clicked the sidebar button to change modes manually
+            pendingUpload = false; 
+            document.getElementById('organModal').style.display = 'flex';
+        }
+
+        function selectOrgan(organValue, organLabel) {
+            // Save the choice
+            currentOrgan = organValue;
+            
+            // Update the sidebar text
+            document.getElementById('currentScanLabel').innerText = organLabel;
+            
+            // Close the menu
+            document.getElementById('organModal').style.display = 'none';
+
+            // If they were trying to upload, open the file picker now
+            if (pendingUpload) {
+                document.getElementById('imageInput').click();
+                pendingUpload = false;
+            }
+        }
+
+        
         function playBotAudio(url) {
             if (currentAudio) {
                 currentAudio.pause(); // Stop any currently playing audio
@@ -224,6 +286,7 @@
                 let file = this.files[0];
                 let formData = new FormData();
                 formData.append("image", file);
+                formData.append("organ", currentOrgan);// <-- Tell Flask which mode we are in!
                 let time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 $("#messageFormeight").append(`

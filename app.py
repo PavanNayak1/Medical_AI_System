@@ -3,6 +3,8 @@ import google.generativeai as genai
 # from google.generativeai.types import Blob
 from src.helper import text_embedding
 from src.model import predict_eye_disease
+from src.brain import predict_brain_tumor
+from src.lungs import predict_chest_xray
 from langchain_pinecone import PineconeVectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import create_retrieval_chain
@@ -93,24 +95,66 @@ def upload():
         return "No image uploaded", 400
 
     file = request.files["image"]
+    organ_type = request.form.get("organ")
 
     if file.filename == "":
         return "No selected file", 400
 
     # Read image safely
     image = Image.open(io.BytesIO(file.read())).convert("RGB")
+    # --- SMART VALIDATION: Did the user upload the wrong image? ---
+    try:
+        validation_model = genai.GenerativeModel("gemini-1.5-flash")
+        # We ask Gemini to do a quick sanity check
+        val_prompt = "Look at this medical image. Is it an eye scan (retina/OCT), a brain MRI, a chest X-ray, or a skin image? Reply with ONLY one word: eye, brain, chest, skin, or unknown."
+        val_response = validation_model.generate_content([val_prompt, image])
+        detected_type = val_response.text.strip().lower()
+        expected_type = {"eye": "eye", "brain": "brain", "lungs": "chest"}.get(organ_type)
+        selected_label = {"eye": "Eye", "brain": "Brain", "lungs": "Chest"}.get(organ_type, "Unknown")
 
-    # 🔥 Model prediction happens HERE
-    prediction = predict_eye_disease(image)
+        # Check if Gemini thinks the image doesn't match their selected setting
+        if expected_type and detected_type in ["eye", "brain", "chest", "skin"] and detected_type != expected_type:
+            error_msg = f"Wait! It looks like you uploaded a **{detected_type.capitalize()}** image, but your current target is set to **{selected_label}**. Please change the target in the sidebar."
+            
+            # Generate audio for the error so the bot speaks it out loud!
+            audio_file = f"error_{uuid.uuid4()}.mp3"
+            audio_path = os.path.join("static/audio", audio_file)
+            asyncio.run(generate_neural_voice(error_msg, audio_path))
+
+            return jsonify({
+                "prediction": {"disease": "Error", "confidence": 0},
+                "chatbot_response": error_msg,
+                "audio_url": f"/static/audio/{audio_file}"
+            })
+    except Exception as e:
+        print("Validation error bypassed:", e)
+        pass # If Gemini fails for some reason, just proceed to the ML model anyway
+    # -----------------------------------------------------------------
+    # If it passes validation, route it to your TensorFlow models!
+    scan_name = "scan"
+    if organ_type == "eye":
+        prediction = predict_eye_disease(image)
+        scan_name = "Retinal OCT scan"
+    elif organ_type == "brain":
+        prediction = predict_brain_tumor(image)
+        scan_name = "Brain MRI scan"
+    elif organ_type == "lungs":
+        prediction = predict_chest_xray(image)
+        scan_name = "Chest X-ray"
+    else:
+        return jsonify({"error": "Invalid organ type selected"}), 400
+
+    # # 🔥 Model prediction happens HERE
+    # prediction = predict_eye_disease(image)
 
     if prediction is None:
         return "Model could not classify the image", 500
 
     # 🔥 Send result to chatbot
     query = (
-    f"The OCT scan suggests {prediction['disease']} "
-    f"with {prediction['confidence']*100:.1f}% confidence. "
-    "Explain briefly in a patient-friendly way."
+        f"The {scan_name} suggests {prediction['disease']} "
+        f"with {prediction['confidence']*100:.1f}% confidence. "
+        "Explain briefly in a patient-friendly way."
     )
 
     response = rag_chain.invoke({"input": query})

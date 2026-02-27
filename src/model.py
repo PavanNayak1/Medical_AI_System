@@ -22,7 +22,7 @@ def build_model():
     return tf.keras.Model(inputs, outputs)
 
 model = build_model()
-model.load_weights("eye_diseases_weights.weights.h5")
+model.load_weights("models/eye_diseases_weights.weights.h5")
 
 
 
