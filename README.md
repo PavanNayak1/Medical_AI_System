@@ -80,6 +80,7 @@ Talk about general management
 Answer follow-up questions
 
 It uses a medical knowledge base (RAG) to give accurate and relevant information.
+<hr>
 
 **🛠️ Technologies Used**
 
@@ -97,10 +98,8 @@ Gemini API – Language model
 Edge TTS – Voice generation
 
 HTML / CSS / JavaScript – Frontend
-
+<hr>
 **📁 Project Structure**
-
-
 Medical_AI_System/
 │
 ├── app.py
@@ -123,7 +122,7 @@ Medical_AI_System/
 ├── .env
 ├── requirements.txt
 └── README.md
-
+<hr>
 ****⚙️ Setup Instructions****
 1️⃣ Clone the repository
 git clone <your-github-repo-link>
@@ -151,7 +150,7 @@ python app.py
 The app will start at:
 
 http://127.0.0.1:8080
-
+<hr>
 **⚠️ Important Disclaimer
 **
 This project is for educational and assistive purposes only.
