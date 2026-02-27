@@ -133,27 +133,34 @@ HTML / CSS / JavaScript – Frontend
 ****⚙️ Setup Instructions****
 
 1️⃣ Clone the repository
+
 git clone <your-github-repo-link>
 cd Medical_AI_System
 
 2️⃣ Create and activate a virtual environment
+```
 python -m venv medchatenv
 source medchatenv/bin/activate   # Linux / Mac
 # medchatenv\Scripts\activate    # Windows
+```
 
 3️⃣ Install dependencies
+```
 pip install -r requirements.txt
-
+```
 4️⃣ Configure environment variables
 
 Create a .env file in the root directory:
 
+```
 PINECONE_API_KEY=your_pinecone_api_key
 GOOGLE_API_KEY=your_gemini_api_key
+```
 
 5️⃣ Run the application
+```
 python app.py
-
+```
 
 The app will start at:
 
