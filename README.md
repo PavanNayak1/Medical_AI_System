@@ -1,13 +1,37 @@
-# 🧿  Eye Disease Assistant – OCT Image & Medical Chatbot
+# 🏥 QuickMed AI – Medical Imaging & Chat Assistant
+MedInsight AI is an AI-powered medical assistant that analyzes medical images and answers health-related questions in a simple and structured way.
 
-An AI-powered eye disease assistant that analyzes Retinal OCT images and provides clear, structured explanations using a medical knowledge-based chatbot.
-This project is designed for educational and assistive purposes only.
+It supports:
 
-**🔍 What This Bot Does** 
+👁 Eye (Retinal OCT)
 
-Accepts Retinal OCT images uploaded by the user
+🧠 Brain (MRI)
 
-Uses a deep learning model to predict eye conditions:
+🫁 Chest (X-ray)
+
+💬 Text-based medical questions
+
+🎤 Voice interaction
+
+This project is for educational and assistive use only.
+<hr>
+
+**🔍 What It Does**
+🖼 Image Analysis
+
+You can upload a medical scan, and the system will:
+
+Predict the disease using a deep learning model
+
+Show a confidence score
+
+Explain the condition in clear language
+
+Provide a voice response (optional)
+
+Supported Conditions
+
+**Eye (OCT):**
 
 CNV
 
@@ -17,55 +41,93 @@ DRUSEN
 
 NORMAL
 
-Provides a confidence score for the prediction
+**Brain (MRI):**
 
-Explains the condition using a medical knowledge-based chatbot (RAG)
+Glioma
 
-Displays both the uploaded image and the chatbot response in a single interface
+Meningioma
 
-⚠️ This system does not provide medical diagnosis or treatment advice.
+Pituitary Tumor
+
+No Tumor
+
+**Lungs (X-ray):**
+
+Covid-19
+
+Emphysema
+
+Normal
+
+Pneumonia (Bacterial)
+
+Pneumonia (Viral)
+
+Tuberculosis
+
+**💬 Medical Chatbot**
+
+The assistant can:
+
+Explain diseases
+
+Describe symptoms
+
+Discuss causes
+
+Talk about general management
+
+Answer follow-up questions
+
+It uses a medical knowledge base (RAG) to give accurate and relevant information.
 
 **🛠️ Technologies Used**
 
 
-TensorFlow / Keras – model inference
+TensorFlow / Keras – Model inference
 
-Flask – backend server
+Flask – Backend
 
-LangChain – chatbot orchestration
+LangChain – RAG pipeline
 
-Pinecone – vector database for medical knowledge
+Pinecone – Vector database
 
-Gemini API – language model
+Gemini API – Language model
 
-HTML / CSS / JavaScript – chatbot interface
+Edge TTS – Voice generation
+
+HTML / CSS / JavaScript – Frontend
 
 **📁 Project Structure**
 
 
-Eye_Disease_Chatbot/
+Medical_AI_System/
 │
-├── app.py                  # Flask application
+├── app.py
 ├── src/
-│   ├── model.py             # Model loading & prediction logic
-│   ├── helper.py            # Embeddings and utility functions
-│   ├── prompt.py            # System prompt
+│   ├── model.py
+│   ├── brain.py
+│   ├── heart.py
+│   ├── helper.py
+│   └── prompt.py
+│
 │
 ├── templates/
-│   └── chat.html            # Chatbot UI
+│   └── chat.html
 │
 ├── static/
-│   └── style.css            # UI styling
+│   ├── style.css
+│   └── audio/
 │
-├── eye_diseases_weights.weights.h5   # Model weights
-├── .env                     # API keys
+├── models/
+├── .env
 ├── requirements.txt
 └── README.md
 
 ****⚙️ Setup Instructions****
 1️⃣ Clone the repository
 git clone <your-github-repo-link>
-cd Eye_Disease_Chatbot
+cd Medical_AI_System
 
 2️⃣ Create and activate a virtual environment
 python -m venv medchatenv
@@ -89,31 +151,6 @@ python app.py
 The app will start at:
 
 http://127.0.0.1:8080
-
-****🧑‍⚕️ How to Use the Bot****
-**🔹 Text-Based Questions**
-
-Open the chatbot interface
-
-Type your question related to eye diseases
-
-The chatbot responds using medical knowledge
-
-**🔹 OCT Image Analysis**
-
-Click the upload icon
-
-Select a Retinal OCT image
-
-The system:
-
-Displays the uploaded image
-
-Predicts the eye condition
-
-Shows the confidence score
-
-Provides a structured explanation
 
 **⚠️ Important Disclaimer
 **
